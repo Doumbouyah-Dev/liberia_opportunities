@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}HJ Opportunity Hub | Jobs, Scholarships & Articles{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- SEARCH BAR -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <input type="text" id="live-search" class="form-control form-control-lg" 
+                   placeholder="Search opportunities and articles..." value="{{ search_query|default:'' }}">
+        </div>
+    </div>
+
+    <!-- Container for results -->
+    <div id="search-results">
+        <!-- Render initial homepage content -->
+        <div id="home-content">
+            <!-- Featured Opportunities and Latest Articles -->
+            {% include "core/home_content.html" %}
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function(){
+    var typingTimer;
+    var doneTypingInterval = 300; // 300ms delay
+
+    $("#live-search").on("keyup", function(){
+        clearTimeout(typingTimer);
+        var query = $(this).val();
+        typingTimer = setTimeout(function(){
+            $.ajax({
+                url: "{% url 'home' %}",
+                data: {q: query},
+                dataType: "json",
+                success: function(response){
+                    $("#search-results").html(response.html);
+                }
+            });
+        }, doneTypingInterval);
+    });
+});
+</script>
+
+<div class="container mt-4">
+
+    <!-- HERO / Featured Opportunity -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <h1 class="mb-3">Featured Opportunities in Liberia</h1>
+            {% if featured_opportunities %}
+                <div class="card mb-3 shadow-sm">
+                    {% with opp=featured_opportunities.0 %}
+                    <div class="card-body">
+                        <h2 class="card-title">{{ opp.title }}</h2>
+                        <p class="text-muted">
+                            {{ opp.organization.name|default:opp.source }} • 
+                            {{ opp.country.name }} {% if opp.city %}- {{ opp.city.name }}{% endif %} • 
+                            {% if opp.remote %}Remote{% endif %}
+                        </p>
+                        <p class="deadline">Deadline: {{ opp.application_deadline }}</p>
+                        <p>{{ opp.description|truncatechars:180 }}</p>
+                        <a href="{% url 'opportunity_detail' opp.slug %}" class="btn btn-warning">Apply Now</a>
+                    </div>
+                    {% endwith %}
+                </div>
+
+                <!-- Secondary Featured Opportunities Grid -->
+                <div class="row">
+                    {% for opp in featured_opportunities|slice:"1:4" %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ opp.title }}</h5>
+                                <p class="text-muted">
+                                    {{ opp.organization.name|default:opp.source }}
+                                </p>
+                                <a href="{% url 'opportunity_detail' opp.slug %}" class="btn btn-warning btn-sm">Apply</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No featured opportunities at the moment. Check back soon!</p>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Latest Opportunities -->
+        <div class="col-lg-4">
+            <h3 class="mb-3">Latest Opportunities</h3>
+            <ul class="list-group">
+                {% for opp in latest_opportunities %}
+                <li class="list-group-item">
+                    <a href="{% url 'opportunity_detail' opp.slug %}">{{ opp.title|truncatechars:50 }}</a>
+                    <br>
+                    <small class="text-muted">{{ opp.application_deadline }}</small>
+                </li>
+                {% empty %}
+                <li class="list-group-item">No opportunities yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- BLOG SECTION -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4">Latest Articles</h2>
+        </div>
+
+        {% for article in latest_articles %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if article.cover_image %}
+                <img src="{{ article.cover_image.url }}" class="card-img-top" alt="{{ article.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ article.title|truncatechars:60 }}</h5>
+                    <p class="text-muted">
+                        {{ article.author.username }} | {{ article.published_date|date:"M d, Y" }}
+                    </p>
+                    <p>{{ article.excerpt|truncatechars:120 }}</p>
+                    <a href="{{ article.get_absolute_url }}" class="btn btn-warning btn-sm">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No blog articles yet. Check back soon!</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

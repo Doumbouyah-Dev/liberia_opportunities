@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{{ opportunity.title }} | Opportunities for Liberians
+{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{{ opportunity.title }}. Apply before {{ opportunity.application_deadline }}. Open to Liberians.">
+
+<!-- Open Graph (WhatsApp / Facebook) -->
+<meta property="og:title" content="{{ opportunity.title }}">
+<meta property="og:description" content="Apply before {{ opportunity.application_deadline }}. Open to Liberians.">
+<meta property="og:type" content="article">
+
+<!-- Schema.org (Job / Opportunity) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": "{{ opportunity.title }}",
+  "datePosted": "{{ opportunity.posted_date|date:'Y-m-d' }}",
+  "validThrough": "{{ opportunity.application_deadline|date:'Y-m-d' }}",
+  "employmentType": "{{ opportunity.opportunity_type }}",
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ opportunity.organization.name|default:'Opportunity Provider' }}"
+  },
+  "jobLocationType": "{{ opportunity.remote|yesno:'TELECOMMUTE,ON_SITE' }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Title -->
+<h1 class="mb-2">{{ opportunity.title }}</h1>
+
+<p class="text-muted">
+    {{ opportunity.category.name }}
+    •
+    {% if opportunity.remote %}
+        Remote
+    {% else %}
+        {{ opportunity.country.name }}
+        {% if opportunity.city %} – {{ opportunity.city.name }}{% endif %}
+    {% endif %}
+</p>
+
+<hr>
+
+<!-- Key Info -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <p>
+            <strong>Organization / Donor:</strong><br>
+            {{ opportunity.organization.name|default:opportunity.source }}
+        </p>
+
+        <p>
+            <strong>Opportunity Type:</strong><br>
+            {{ opportunity.get_opportunity_type_display }}
+        </p>
+    </div>
+
+    <div class="col-md-6">
+        <p class="deadline">
+            <strong>Application Deadline:</strong><br>
+            {{ opportunity.application_deadline }}
+        </p>
+
+        <p>
+            <strong>Posted:</strong><br>
+            {{ opportunity.posted_date|date:"F j, Y" }}
+        </p>
+    </div>
+</div>
+
+<!-- Description -->
+<h3>Opportunity Details</h3>
+<p>{{ opportunity.description|linebreaks }}</p>
+
+<!-- Eligibility -->
+<h3>Eligibility</h3>
+<p>{{ opportunity.eligibility|linebreaks }}</p>
+
+<!-- Benefits -->
+{% if opportunity.benefits %}
+<h3>Benefits</h3>
+<p>{{ opportunity.benefits|linebreaks }}</p>
+{% endif %}
+
+<!-- How to Apply -->
+<h3>How to Apply</h3>
+
+{% if opportunity.application_link %}
+    <p>
+        Apply online using the link below:
+    </p>
+    <a href="{{ opportunity.application_link }}"
+       class="btn btn-warning btn-lg"
+       target="_blank" rel="noopener">
+        Apply Now
+    </a>
+{% elif opportunity.application_email %}
+    <p>
+        Send your application to:
+    </p>
+    <p>
+        <strong>{{ opportunity.application_email }}</strong>
+    </p>
+{% else %}
+    <p class="text-danger">
+        Application details not provided. Please check the source.
+    </p>
+{% endif %}
+
+<hr>
+
+<!-- Source -->
+<p class="text-muted">
+    <small>
+        Source: {{ opportunity.source }}
+    </small>
+</p>
+
+<!-- Back Link -->
+<a href="{% url 'opportunity_list' %}" class="btn btn-outline-secondary btn-sm">
+    ← Back to Opportunities
+</a>
+
+{% endblock %}

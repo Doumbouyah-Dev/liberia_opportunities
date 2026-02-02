@@ -1,0 +1,42 @@
+Featured Opportunities
+<h2 class="mb-3">Featured Opportunities</h2>
+<div class="row mb-4">
+    {% for opp in featured_opportunities %}
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ opp.title }}</h5>
+                <p class="text-muted">
+                    {{ opp.organization.name|default:opp.source }} • {{ opp.country.name }}{% if opp.city %} - {{ opp.city.name }}{% endif %}
+                </p>
+                <p>Deadline: {{ opp.application_deadline }}</p>
+                <a href="{% url 'opportunity_detail' opp.slug %}" class="btn btn-warning btn-sm">Apply Now</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>No featured opportunities at the moment.</p>
+    {% endfor %}
+</div>
+
+<!-- Latest Blog Articles -->
+<h2 class="mb-3">Latest Articles</h2>
+<div class="row mb-4">
+    {% for article in latest_articles %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            {% if article.cover_image %}
+            <img src="{{ article.cover_image.url }}" class="card-img-top" alt="{{ article.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ article.title|truncatechars:60 }}</h5>
+                <p class="text-muted">{{ article.author.username }} | {{ article.published_date|date:"M d, Y" }}</p>
+                <p>{{ article.excerpt|truncatechars:120 }}</p>
+                <a href="{{ article.get_absolute_url }}" class="btn btn-warning btn-sm">Read More</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>No articles yet.</p>
+    {% endfor %}
+</div>

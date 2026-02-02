@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} | HJ Opportunity Hub | Blog{% endblock %}
+
+{% block content %}
+<article class="mb-5">
+    {% if article.cover_image %}
+    <img src="{{ article.cover_image.url }}" class="img-fluid mb-4" alt="{{ article.title }}">
+    {% endif %}
+
+    <h1>{{ article.title }}</h1>
+    <p class="text-muted">
+        By {{ article.author.username }} | {{ article.published_date|date:"F j, Y" }} | 
+        {% if article.category %}Category: {{ article.category.name }}{% endif %}
+    </p>
+    <hr>
+    <div class="blog-content">
+        {{ article.content|safe }}
+    </div>
+</article>
+
+<a href="{% url 'blog_list' %}" class="btn btn-outline-secondary btn-sm">← Back to Blog</a>
+{% endblock %}

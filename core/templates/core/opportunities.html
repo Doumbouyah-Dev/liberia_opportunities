@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Opportunities | HJ Opportunity Hub{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">All Opportunities</h1>
+    <!-- SEARCH BAR -->
+<div class="row g-3 mb-3">
+    <div class="col-md-12">
+        <input type="text" id="search" class="form-control" placeholder="Search opportunities..." value="{{ search_query|default:'' }}">
+    </div>
+</div>
+
+<!-- FILTERS FORM -->
+<form id="filter-form" method="GET" class="row g-3 mb-4">
+    ...
+</form>
+
+<!-- Opportunities container for AJAX -->
+<div id="opportunity-list">
+    {% include "core/opportunity_list_ajax.html" %}
+</div>
+
+
+    <!-- FILTERS -->
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <select name="country" class="form-select">
+                <option value="">All Countries</option>
+                {% for c in countries %}
+                    <option value="{{ c.slug }}" {% if selected_country == c.slug %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="remote" class="form-select">
+                <option value="">Remote / On-site</option>
+                <option value="yes" {% if selected_remote == "yes" %}selected{% endif %}>Remote</option>
+                <option value="no" {% if selected_remote == "no" %}selected{% endif %}>On-site</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-warning w-100">Filter</button>
+        </div>
+    </form>
+
+    <!-- OPPORTUNITIES LIST -->
+    {% for opp in page_obj %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">{{ opp.title }}</h5>
+            <p class="text-muted">
+                {{ opp.organization.name|default:opp.source }} • {{ opp.country.name }} {% if opp.city %}- {{ opp.city.name }}{% endif %} • 
+                {% if opp.remote %}Remote{% endif %}
+            </p>
+            <p class="deadline">Deadline: {{ opp.application_deadline }}</p>
+            <p>{{ opp.description|truncatechars:150 }}</p>
+            <a href="{% url 'opportunity_detail' opp.slug %}" class="btn btn-warning btn-sm">Apply Now</a>
+        </div>
+    </div>
+    {% empty %}
+    <p>No opportunities match your filters.</p>
+    {% endfor %}
+
+    <!-- PAGINATION -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if selected_category %}category={{ selected_category }}&{% endif %}
+                                         {% if selected_country %}country={{ selected_country }}&{% endif %}
+                                         {% if selected_remote %}remote={{ selected_remote }}&{% endif %}
+                                         page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if selected_category %}category={{ selected_category }}&{% endif %}
+                                         {% if selected_country %}country={{ selected_country }}&{% endif %}
+                                         {% if selected_remote %}remote={{ selected_remote }}&{% endif %}
+                                         page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+
+    function fetchOpportunities() {
+        var query = $("#search").val();
+        var data = $("#filter-form").serialize();
+        data += "&q=" + encodeURIComponent(query);
+
+        $.ajax({
+            url: "{% url 'opportunity_list' %}",
+            data: data,
+            dataType: "json",
+            success: function(response){
+                $("#opportunity-list").html(response.html);
+            }
+        });
+    }
+
+    // Trigger AJAX search on keyup
+    $("#search").on("keyup", function(){
+        fetchOpportunities();
+    });
+
+    // Trigger AJAX when filters change
+    $("#filter-form select").on("change", function(){
+        fetchOpportunities();
+    });
+
+});
+</script>
+
+{% endblock %}
