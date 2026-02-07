@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,9 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    'locations',
+    'locations.apps.LocationsConfig',
     'opportunities',
-    'blog',
+    'blog.apps.BlogConfig',
     'ckeditor', 
     'ckeditor_uploader',
 
@@ -129,7 +130,7 @@ ADMIN_SITE_TITLE = "Liberia Opportunities"
 ADMIN_INDEX_TITLE = "Opportunity Management Dashboard"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_CONFIGS = {

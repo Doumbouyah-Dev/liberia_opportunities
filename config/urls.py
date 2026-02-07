@@ -21,6 +21,7 @@ from core import views as core_views
 from blog import views as blog_views
 
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", home, name="home"),
